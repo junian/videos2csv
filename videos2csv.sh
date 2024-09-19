@@ -5,8 +5,8 @@ readonly APP_VERSION=1.0.1
 # Define the root directory
 ROOT_DIR=$1
 
-# Output CSV Header
-echo "Year,Month,Project Name,Filename,Modified Date,Path"
+# Output CSV Header with all fields as strings
+echo "\"Year\",\"Month\",\"Project Name\",\"Filename\",\"Modified Date\",\"Path\""
 
 # Updated array of common video file extensions based on Wikipedia article
 video_extensions=("mp4" "m4v" "mov" "mkv" "avi" "flv" "webm" "ts" "m2ts" "vob" "rm" "rmvb" "wmv" "ogv" "gifv")
@@ -22,6 +22,18 @@ is_video_file() {
         fi
     done
     return 1
+}
+
+# Function to escape double quotes in CSV fields
+escape_csv_field() {
+    local field=$1
+    # Escape double quotes by doubling them
+    field=$(echo "$field" | sed 's/"/""/g')
+    # If the field contains commas or double quotes, wrap it in double quotes
+    if [[ "$field" == *","* || "$field" == *"\""* ]]; then
+        field="\"$field\""
+    fi
+    echo "$field"
 }
 
 # List folders from ROOT_DIR with format YYMM Project Name
@@ -41,8 +53,15 @@ find "$ROOT_DIR" -mindepth 1 -maxdepth 1 -type d | while read -r folder; do
                 modified_date=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "$file")
                 # Calculate relative path by stripping ROOT_DIR from the full path
                 relative_path="${file#$ROOT_DIR/}"
-                # Output year, month, project name, filename, modified date, and relative path in CSV format
-                echo "$year,$month,$project_name,$(basename "$file"),$modified_date,$relative_path"
+                # Escape fields to handle special CSV characters
+                year=$(escape_csv_field "$year")
+                month=$(escape_csv_field "$month")
+                project_name=$(escape_csv_field "$project_name")
+                filename=$(escape_csv_field "$(basename "$file")")
+                modified_date=$(escape_csv_field "$modified_date")
+                relative_path=$(escape_csv_field "$relative_path")
+                # Output the CSV row
+                echo "$year,$month,$project_name,$filename,$modified_date,$relative_path"
             fi
         done
     fi
