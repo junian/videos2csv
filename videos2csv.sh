@@ -1,10 +1,12 @@
 #!/bin/bash
 
+readonly APP_VERSION=1.0.1
+
 # Define the root directory
 ROOT_DIR=$1
 
 # Output CSV Header
-echo "Year,Month,Project Name,Filename,Modified Date"
+echo "Year,Month,Project Name,Filename,Modified Date,Path"
 
 # Updated array of common video file extensions based on Wikipedia article
 video_extensions=("mp4" "m4v" "mov" "mkv" "avi" "flv" "webm" "ts" "m2ts" "vob" "rm" "rmvb" "wmv" "ogv" "gifv")
@@ -37,8 +39,10 @@ find "$ROOT_DIR" -mindepth 1 -maxdepth 1 -type d | while read -r folder; do
             if is_video_file "$file"; then
                 # Get file modified date
                 modified_date=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M:%S" "$file")
-                # Output year, month, project name, filename, and modified date in CSV format
-                echo "$year,$month,$project_name,$(basename "$file"),$modified_date"
+                # Calculate relative path by stripping ROOT_DIR from the full path
+                relative_path="${file#$ROOT_DIR/}"
+                # Output year, month, project name, filename, modified date, and relative path in CSV format
+                echo "$year,$month,$project_name,$(basename "$file"),$modified_date,$relative_path"
             fi
         done
     fi
