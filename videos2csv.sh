@@ -5,6 +5,7 @@ readonly APP_VERSION=1.0.1
 # Define the root directory
 ROOT_DIR=$1
 OUTPUT_CSV=$2
+NO_PROGRESS=$3
 
 # Output CSV Header with all fields as strings
 echo "\"Year\",\"Month\",\"Project Name\",\"Filename\",\"Created Date\",\"Modified Date\",\"Path\"" > "$OUTPUT_CSV"
@@ -13,6 +14,10 @@ echo "\"Year\",\"Month\",\"Project Name\",\"Filename\",\"Created Date\",\"Modifi
 video_extensions=("mp4" "m4v" "mov" "mkv" "avi" "flv" "webm" "ts" "m2ts" "vob" "rm" "rmvb" "wmv" "ogv" "gifv")
 
 progress_bar() {
+    if [ $2 = 0 ]; then
+        return
+    fi
+    
     # Process data
     let _progress=(${1}*100/${2}*100)/100
     let _done=(${_progress}*4)/10
@@ -59,6 +64,7 @@ START=0;
 find "$ROOT_DIR" -mindepth 1 -maxdepth 1 -type d | while read -r folder; do
     progress_bar ${START} ${END}
     START=$START+1
+    
 
     folder_name=$(basename "$folder")
 
@@ -92,4 +98,4 @@ find "$ROOT_DIR" -mindepth 1 -maxdepth 1 -type d | while read -r folder; do
 done
 
 progress_bar ${END} ${END}
-
+echo ""
